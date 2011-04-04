@@ -1,19 +1,20 @@
 #!/usr/bin/env lua5.1
-
-require"socket"
-
 --[[
-FIXME
+An example RPC-like echo server.
+See ECHO.txt for usage.
+
+Note:
 
 control sockets are never closed, they leak
 
-echo listen sockets are never close, they listen forever
-
+echo listen sockets are never closed, they listen forever
 ]]
+
+require"socket"
 
 local TIMEOUT = 0.1
 
-local ctrl_port = arg[1]
+local ctrl_port = tonumber(arg[1] or 9999)
 
 if not ctrl_port then
     print("Usage: " .. arg[0] .. " control_listen_port")
@@ -22,7 +23,7 @@ end
 
 local ctrl_listen_sock = assert(socket.bind("*", ctrl_port))
 ctrl_listen_sock:settimeout(TIMEOUT)
-print("Waiting for connection...")
+print("Listening on:", ctrl_port)
 
 local mon_socks = {ctrl_listen_sock} -- all socks, starting with just server ctrl sock
 local echo_listen_socks = {} -- echo listen socks
@@ -63,7 +64,7 @@ local function generate_echo_listen_socks(client_ctrl)
 end
 
 while true do
-    print("Waiting for activity on " .. #mon_socks .. " sockets")
+    --print("Waiting for activity on " .. #mon_socks .. " sockets")
     local readsocks = socket.select(mon_socks)
     for _, sock in ipairs(readsocks) do
         -- control listen sock

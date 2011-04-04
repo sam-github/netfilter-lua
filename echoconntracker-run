@@ -1,0 +1,15 @@
+# Run echoconntracker within a ruleset.
+# See ECHO.txt for usage.
+
+# set -x
+
+restore() {
+    iptables-restore < echoconntracker.restore
+}
+
+trap restore INT
+
+iptables-restore < echoconntracker.rules
+
+./echoconntracker port=9999 verbose=y
+

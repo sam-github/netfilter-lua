@@ -1,0 +1,30 @@
+Example of doing userspace connection tracking.
+
+Use a combination of nfq and nfct to do userspace connection tracking for a
+sample RPC-like service over TCP, that uses ephemeral persistent ports.
+
+The server is the echoserver running on localhost, client is the echoclient.
+
+Start server:
+
+    ./echoserver 9999
+
+Test client:
+
+    ./echoclient localhost 9999 hello world
+
+Kill it after a few connections.
+
+Start conntracker:
+
+    sudo ./echoconntracker-run
+
+The -run utility will set your iptables rules to echoconntracker.rules, and
+restore them to echoconntracker.restore.
+
+Try client again... kill conntracker...
+
+To clear the conntracker's rules:
+
+    sudo ./echoconntracker port=9999 verbose=y clear=y
+

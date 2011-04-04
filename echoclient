@@ -1,11 +1,15 @@
 #!/usr/bin/env lua5.1
+--[[
+An example RPC-like echo client.
+See ECHO.txt for usage.
 
--- echoclient host ctrl_port string1 string2....
---   request one port
---   connect to requested port
---   send/receive each string in turn
---   close echo port
---   close control port
+echoclient host ctrl_port string1 string2....
+   request one port
+   connect to requested port
+   send/receive each string in turn
+   close echo port
+   close control port
+]]
 
 require"socket"
 
