@@ -70,9 +70,11 @@ echo_sock2 = send_strings(host, echo_port, "second")
 echo_sock2:close()
 echo_sock1:close()
 
+--[[
 print("Use echo port as long as we can...")
 
 while send_strings(host, echo_port, "... as long as we can") do
     pause()
 end
+--]]
 
