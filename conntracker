@@ -1,0 +1,59 @@
+#!/usr/bin/env lua5.1
+--[[
+A userspace connection tracker for an example RPC-like echo service.
+Assumes iptables rules have been setup appropriately.
+See ECHO.txt for usage.
+]]
+
+require"exptrack"
+
+-- arguments
+
+arg.method = "queue"
+arg.decode = "echo"
+
+for i,a in ipairs(arg) do
+    local s,e,k,v = a:find("^([^=]+)=(.*)$")
+    arg[k] = v
+end
+
+if arg.verbose then
+    exptrack.verbose = print
+end
+if arg.verbose == "very" then
+    exptrack.debug = print
+end
+
+method = {
+    queue = {
+        open = function()
+            return exptrack.open(arg.queuenum)
+        end;
+
+        catch = exptrack.catch;
+    };
+
+    pcap = {
+        open = function()
+            return pcap.open_live(arg.ifx)
+        end;
+
+        catch = function(cap, decode)
+            for capdata, timestamp, wirelen in cap.next, cap do
+                decode(capdata)
+            end
+        end;
+    };
+}
+
+exptrack.debug"debug output is on"
+exptrack.verbose"verbose output is on"
+
+decoder = require(arg.decode)
+catcher = method[arg.method]
+
+c = catcher.open()
+d = decoder.decode
+
+catcher.catch(c, d)
+
