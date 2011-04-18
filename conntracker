@@ -48,6 +48,7 @@ method = {
 
 exptrack.debug"debug output is on"
 exptrack.verbose"verbose output is on"
+exptrack.verbose("decode", arg.decode, "method", arg.method)
 
 decoder = require(arg.decode)
 catcher = method[arg.method]

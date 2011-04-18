@@ -8,6 +8,7 @@ See ECHO.txt for usage.
 -- FIXME remove assert
 local assert = assert
 local tonumber = tonumber
+local tostring = tostring
 local nfct = require"nfct"
 local nfq = require"nfq"
 
@@ -105,7 +106,7 @@ end
 - src, dst are addresses of master connection, and will be used for expected
 - sport, dport are ports of master connection
 - expectport is destination port of expected connection
-- timeout is how long the expectation will wait for a matching connection
+- timeout is how long the expectation will wait for a matching connection, in seconds
 - flags defaults to nil, but can be "permanent"
 
 FIXME assumes TCP! Would need a protocol argument to work with UDP.
@@ -115,7 +116,7 @@ function expect(src, dst, sport, dport, expectport, timeout, flags)
     local master = tuple("master", src, dst, sport, dport)
     local expected = tuple("expected", src, dst, nil, expectport)
     local mask = tuple("mask", 0xffffffff, 0xffffffff, nil, expectport)
-    local timeout = 10 -- seconds FIXME we need this to be longer than the real server's timeout
+    local timeout = timeout or 10
     local exp = assert(nfct.exp_new(master, expected, mask, timeout, flags))
 
     nfct.destroy(master)
@@ -128,7 +129,13 @@ function expect(src, dst, sport, dport, expectport, timeout, flags)
 
     -- FIXME this can fail if conntrack hasn't tracked the master... but is
     -- that possible? we just got data from nfq, the connection must exist
-    check(nfct.exp_query(h, "create", exp))
+    local _, emsg, eno = nfct.exp_query(h, "create", exp)
+
+    if eno == 17 then
+        -- expectation already exists... normal?
+    else
+        check(_, emsg, eno)
+    end
 
     nfct.exp_destroy(exp)
 
