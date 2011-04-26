@@ -14,14 +14,17 @@ LLUA=$(shell pkg-config --libs ${LUA})
 
 build: $(BINDING)
 
-prefix=/usr
+prefix=/usr/local
 
 SODIR = $(DESTDIR)$(prefix)/lib/lua/5.1/
+BINDIR = $(DESTDIR)$(prefix)/bin/
 
 .PHONY: install
 install: $(BINDING)
-	mkdir -p $(SODIR)
+	mkdir -p $(SODIR) 
 	install -t $(SODIR) $(BINDING)
+	mkdir -p $(BINDIR) 
+	install -t $(BINDIR) nfct-expect-create-userspace
 
 CWARNS = -Wall \
   -pedantic \
