@@ -32,7 +32,7 @@ function decode(inip)
         if expectport ~= nil then
             exptrack.verbose("Q", "master", src, dst, sport, dport)
             exptrack.verbose("Q", "expect", src, dst, "*", expectport)
-            exptrack.expect(src, dst, sport, dport, expectport, 10, "permanent")
+            exptrack.expect(src, dst, sport, dport, expectport, 10)
         end 
     else
         exptrack.debug("Q", "flags", string.format("%#x", tcp.flags), "(non-data)")

@@ -1,3 +1,4 @@
+# A userspace connection tracker for an example RPC-like echo service.
 # Run echoconntracker within a ruleset.
 # See ECHO.txt for usage.
 
@@ -11,5 +12,5 @@ trap restore INT
 
 iptables-restore < echoconntracker.rules
 
-./echoconntracker port=9999 verbose=y
+./conntracker method=queue decode=echo expector=external verbose=y
 
