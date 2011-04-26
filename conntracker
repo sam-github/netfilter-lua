@@ -11,6 +11,9 @@ require"exptrack"
 
 arg.method = "queue"
 arg.decode = "echo"
+arg.verbose = nil -- bool
+arg.debug = nil -- bool
+arg.expector = nil -- "external" or default
 
 for i,a in ipairs(arg) do
     local s,e,k,v = a:find("^([^=]+)=(.*)$")
@@ -23,6 +26,30 @@ end
 if arg.verbose == "very" then
     exptrack.debug = print
 end
+
+expector = {
+    external = function (src, dst, sport, dport, expectport, timeout, flag)
+        local ext = {
+            "/usr/local/bin/nfct-expect-create-userspace",
+            "expect="..expectport,
+            "src="..src,
+            "dst="..dst,
+            "sport="..sport,
+            "dport="..dport,
+        }
+        if timeout then
+            table.insert(ext, "timeout="..timeout)
+        end
+        if flag then
+            table.insert(ext, "flag="..flag)
+        end
+        local cmd = table.concat(ext)
+        exptrack.verbose("cmd=", cmd)
+        exptrack.verbose("ret=", os.execute(cmd))
+    end;
+}
+
+arg.expector = expector[arg.expector]
 
 method = {
     queue = {
