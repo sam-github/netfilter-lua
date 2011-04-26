@@ -5,13 +5,14 @@ Assumes iptables rules have been setup appropriately.
 See ECHO.txt for usage.
 ]]
 
--- FIXME remove assert
+-- FIXME remove assert, its too strong a failure
+
+local arg = assert(arg)
 local assert = assert
 local tonumber = tonumber
 local tostring = tostring
 local nfct = require"nfct"
 local nfq = require"nfq"
-
 
 module(...)
 
@@ -111,13 +112,17 @@ end
 
 FIXME assumes TCP! Would need a protocol argument to work with UDP.
 ]]
-function expect(src, dst, sport, dport, expectport, timeout, flags)
+function expect(src, dst, sport, dport, expectport, timeout, flag)
+    if arg.expector then
+        return arg.expector(src, dst, sport, dport, expectport, timeout, flag)
+    end
+
     -- identify the master to which this expectation is related
     local master = tuple("master", src, dst, sport, dport)
     local expected = tuple("expected", src, dst, nil, expectport)
     local mask = tuple("mask", 0xffffffff, 0xffffffff, nil, expectport)
     local timeout = timeout or 10
-    local exp = assert(nfct.exp_new(master, expected, mask, timeout, flags))
+    local exp = assert(nfct.exp_new(master, expected, mask, timeout, flag))
 
     nfct.destroy(master)
     nfct.destroy(expected)
