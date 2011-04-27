@@ -12,12 +12,14 @@ function decode(inip)
     n:clear()
     n:decode_ip(inip)
 
-    local _, tcp = pcall(n.get_tcp, n)
-    local _, ip = pcall(n.get_ipv4, n)
+    local tcpok, tcp = pcall(n.get_tcp, n)
+    local ipok, ip = pcall(n.get_ipv4, n)
 
-    if not tcp or not ip then
+    if not tcpok or not ipok then
         -- not of requested protocol
-        exptrack.debug("ignore protocol", n:dump())
+        exptrack.debug("ignore protocol<")
+        exptrack.debug(n:dump())
+        exptrack.debug(">")
         return "accept"
     end
 
