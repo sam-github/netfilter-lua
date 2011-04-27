@@ -4,7 +4,9 @@
 
 default: build
 
-BINDING=nfq.so nfct.so
+SO=nfq.so nfct.so
+BIN=conntracker nfct-expect-create-userspace
+LIB=exptrack.lua
 
 CC = gcc
 LDFLAGS = -fPIC -fno-common -shared
@@ -12,19 +14,19 @@ LUA = lua5.1
 CLUA=$(shell pkg-config --cflags ${LUA})
 LLUA=$(shell pkg-config --libs ${LUA})
 
-build: $(BINDING)
+build: $(SO)
 
 prefix=/usr/local
 
 SODIR = $(DESTDIR)$(prefix)/lib/lua/5.1/
+LIBDIR = $(DESTDIR)$(prefix)/share/lua/5.1/
 BINDIR = $(DESTDIR)$(prefix)/bin/
 
 .PHONY: install
-install: $(BINDING)
-	mkdir -p $(SODIR) 
-	install -t $(SODIR) $(BINDING)
-	mkdir -p $(BINDIR) 
-	install -t $(BINDIR) nfct-expect-create-userspace
+install: $(SO) $(BIN) $(LIB)
+	mkdir -p $(SODIR) && install -t $(SODIR) $(SO)
+	mkdir -p $(BINDIR) && install -t $(BINDIR) $(BIN)
+	mkdir -p $(LIBDIR) && install -t $(LIBDIR) $(LIB)
 
 CWARNS = -Wall \
   -pedantic \
