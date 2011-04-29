@@ -47,7 +47,7 @@ end
 expector = {
     external = function (src, dst, sport, dport, expectport, timeout, flag)
         local ext = {
-            "/usr/local/bin/nfct-expect-create-userspace",
+            "nfct-expect-create-userspace",
             "expect="..expectport,
             "src="..src,
             "dst="..dst,
