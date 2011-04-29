@@ -22,7 +22,7 @@ for i,a in ipairs(arg) do
     arg[k] = v
 end
 
-for _,k in ipairs{"expect", "src", "dst", "sport", "dport"} do
+for _,k in ipairs{"expect", "src", "dst", "sport", "dport", "timeout"} do
     usage(k)
 end
 
@@ -85,7 +85,7 @@ ctprint(mask, "mask")
 
 -- Create expectation
 
-exp = assert(nfct.exp_new(master, expected, mask, arg.timeout, arg.permanent and "permanent"))
+exp = assert(nfct.exp_new(master, expected, mask, arg.timeout, arg.flag))
 
 nfct.destroy(master)
 nfct.destroy(expected)
@@ -104,7 +104,6 @@ if eno == 17 then
 else
     assert(_, emsg)
 end
-
 
 nfct.close(h)
 

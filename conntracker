@@ -1,6 +1,6 @@
 #!/usr/bin/env lua5.1
 --[[
-A userspace connection tracker for an example RPC-like echo service.
+A conntracker wrapper using a pluggable queueing method and protocol decoder to set expectations.
 Assumes iptables rules have been setup appropriately.
 See ECHO.txt for usage.
 ]]
@@ -14,6 +14,14 @@ arg.decode = "echo"
 arg.verbose = nil -- bool
 arg.debug = nil -- bool
 arg.expector = nil -- "external" or default
+arg.filter = nil -- a pcap filter, used if method = pcap
+--[[
+Example:
+  filter="(dst port 9999 and dst host 127.0.0.1) or (src port 9999 and src host 127.0.0.1)"
+
+sudo ./conntracker method=pcap decode=echo expector=external verbose=very filter="(dst port 9999 and dst host 127.0.0.1) or (src port 9999 and src host 127.0.0.1)"
+  
+]]
 
 for i,a in ipairs(arg) do
     local s,e,k,v = a:find("^([^=]+)=(.*)$")
@@ -27,6 +35,15 @@ if arg.verbose == "very" then
     exptrack.debug = print
 end
 
+function hex_dump(buf)
+    for i=1,math.ceil(#buf/16) * 16 do
+        if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
+        io.write( i > #buf and '   ' or string.format('%02X ', buf:byte(i)) )
+        if i %  8 == 0 then io.write(' ') end
+        if i % 16 == 0 then io.write( buf:sub(i-16+1, i):gsub('[%z\1-\31,\127-\255]','.'), '\n' ) end
+    end
+end
+
 expector = {
     external = function (src, dst, sport, dport, expectport, timeout, flag)
         local ext = {
@@ -36,20 +53,16 @@ expector = {
             "dst="..dst,
             "sport="..sport,
             "dport="..dport,
+            "timeout="..timeout
         }
-        if timeout then
-            table.insert(ext, "timeout="..timeout)
-        end
         if flag then
             table.insert(ext, "flag="..flag)
         end
-        local cmd = table.concat(ext)
-        exptrack.verbose("cmd=", cmd)
-        exptrack.verbose("ret=", os.execute(cmd))
+        local cmd = table.concat(ext, " ")
+        exptrack.debug("cmd=", cmd)
+        exptrack.debug("ret=", os.execute(cmd))
     end;
 }
-
-arg.expector = expector[arg.expector]
 
 method = {
     queue = {
@@ -62,20 +75,41 @@ method = {
 
     pcap = {
         open = function()
-            return pcap.open_live(arg.ifx)
+            require"pcap"
+
+            local cap = assert(pcap.open_live(arg.ifx))
+            if arg.filter then
+                assert(cap:set_filter(arg.filter))
+            end
+            return cap
         end;
 
         catch = function(cap, decode)
-            for capdata, timestamp, wirelen in cap.next, cap do
-                decode(capdata)
+            while true do
+                local capdata, timestamp, wirelen = cap:next()
+                if capdata then
+                    --hex_dump(capdata)
+                    -- strip the ethernet header
+                    local inip = string.sub(capdata, 1+16)
+                    -- FIXME at least on on lo, eth pcap hdr is 16 bytes, not 14? wtf? Need to figure this out, pcap binding bug?
+                    hex_dump(inip)
+                    decode(inip)
+                elseif timestamp == "timeout" then
+                    -- keep looping
+                    exptrack.verbose("timeout on pcap next")
+                else
+                    assert(capdata, timestamp)
+                end
             end
         end;
     };
 }
 
+arg.expector = expector[arg.expector]
+
 exptrack.debug"debug output is on"
 exptrack.verbose"verbose output is on"
-exptrack.verbose("decode", arg.decode, "method", arg.method)
+exptrack.verbose("decode", arg.decode, "method", arg.method, "expector", arg.expector)
 
 decoder = require(arg.decode)
 catcher = method[arg.method]
