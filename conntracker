@@ -92,7 +92,7 @@ method = {
                     -- strip the ethernet header
                     local inip = string.sub(capdata, 1+16)
                     -- FIXME at least on on lo, eth pcap hdr is 16 bytes, not 14? wtf? Need to figure this out, pcap binding bug?
-                    hex_dump(inip)
+                    -- hex_dump(inip)
                     decode(inip)
                 elseif timestamp == "timeout" then
                     -- keep looping
