@@ -279,6 +279,7 @@ static int ATTR_vals[] = {
   ATTR_EXP_MASK,
   ATTR_EXP_TIMEOUT,
   ATTR_EXP_MAX,
+  NULL
 };
 
 /*static int ATTR_vals_size = 85;*/
@@ -316,6 +317,7 @@ static int NFCT_Q_vals[] = {
   NFCT_Q_DUMP,
   NFCT_Q_DUMP_RESET,
   NFCT_Q_CREATE_UPDATE,
+  NULL
 };
 
 /*static int NFCT_Q_vals_size = 8;*/
@@ -1386,7 +1388,8 @@ LUALIB_API int luaopen_nfct (lua_State *L)
     /* These tables are long, and must agree in length or chaos will ensue,
      * chaos now is better than chaos later.
      */
-    assert(sizeof(ATTR_opts) == sizeof(ATTR_vals));
+    assert(sizeof(ATTR_opts) / sizeof(char *) == sizeof(ATTR_vals) /
+           sizeof(int));
 
     luaL_register(L, "nfct", nfct);
 
