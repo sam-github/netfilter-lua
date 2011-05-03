@@ -43,6 +43,7 @@ segfault or abort if you misuse this module.
 #define WANT_NF_LUA_IPPROTO
 #include "nflua.h"
 
+#include <alloca.h>
 #include <libnetfilter_conntrack/libnetfilter_conntrack.h>
 
 #define NFCT_REGID "wt.nfct"
@@ -279,7 +280,7 @@ static int ATTR_vals[] = {
   ATTR_EXP_MASK,
   ATTR_EXP_TIMEOUT,
   ATTR_EXP_MAX,
-  NULL
+  0
 };
 
 /*static int ATTR_vals_size = 85;*/
@@ -317,7 +318,7 @@ static int NFCT_Q_vals[] = {
   NFCT_Q_DUMP,
   NFCT_Q_DUMP_RESET,
   NFCT_Q_CREATE_UPDATE,
-  NULL
+  0
 };
 
 /*static int NFCT_Q_vals_size = 8;*/
