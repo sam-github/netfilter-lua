@@ -8,13 +8,9 @@ SO=nfq.so nfct.so
 BIN=conntracker nfct-expect-create-userspace expect-create-userspace
 LIB=exptrack.lua
 
-CC = gcc
-LDFLAGS = -fPIC -fno-common -shared
-LUA = lua5.1
-CLUA=$(shell pkg-config --cflags ${LUA})
-LLUA=$(shell pkg-config --libs ${LUA})
+LUA=lua5.1
 
-build: $(SO)
+build: $(SO) $(BIN)
 
 prefix=/usr/local
 
@@ -32,7 +28,13 @@ install-conntracker: $(BIN) $(LIB)
 	mkdir -p $(BINDIR) && install -t $(BINDIR) $(BIN)
 	mkdir -p $(LIBDIR) && install -t $(LIBDIR) $(LIB)
 
+CLUA=$(shell pkg-config --cflags ${LUA})
+LLUA=$(shell pkg-config --libs ${LUA})
+
+FLAGS.SO=-fPIC -fno-common -shared
+
 CWARNS = -Wall \
+  -std=c99 \
   -pedantic \
   -Wcast-align \
   -Wnested-externs \
@@ -41,14 +43,13 @@ CWARNS = -Wall \
   -Wwrite-strings
 
 COPT=-O2 -DNDEBUG -g
-CFLAGS=$(CWARNS) $(CDEFS) $(CLUA) $(LDFLAGS)
-LDLIBS=$(LLUA)
+CFLAGS=$(CWARNS) $(CDEFS) $(LDFLAGS)
 
 
 CC.SO := $(CC) $(COPT) $(CFLAGS)
 
 %.so: %.c
-	$(CC.SO) -o $@ $^ $(LDLIBS)
+	$(CC.SO) $(FLAGS.SO) $(CLUA) -o $@ $^ $(LDLIBS) $(LLUA)
 
 nfq.so: nfq.c nflua.h
 nfq.so: LDLIBS+=-lnetfilter_queue
@@ -56,6 +57,7 @@ nfq.so: LDLIBS+=-lnetfilter_queue
 nfct.so: nfct.c nflua.h
 nfct.so: LDLIBS+=-lnetfilter_conntrack
 
+expect-create-userspace: CFLAGS+=-std=c99
 expect-create-userspace: LDLIBS+=-lnetfilter_conntrack
 expect-create-userspace: expect-create-userspace.c
 
