@@ -35,15 +35,6 @@ if arg.verbose == "very" then
     exptrack.debug = print
 end
 
-function hex_dump(buf)
-    for i=1,math.ceil(#buf/16) * 16 do
-        if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
-        io.write( i > #buf and '   ' or string.format('%02X ', buf:byte(i)) )
-        if i %  8 == 0 then io.write(' ') end
-        if i % 16 == 0 then io.write( buf:sub(i-16+1, i):gsub('[%z\1-\31,\127-\255]','.'), '\n' ) end
-    end
-end
-
 expector = {
     lua = function (src, dst, sport, dport, expectport, timeout, flag)
         local ext = {
@@ -105,14 +96,17 @@ method = {
         end;
 
         catch = function(cap, decode)
+            local linkhdrsize = ({
+                [pcap.DLT.EN10MB] = 14,
+                [pcap.DLT.LINUX_SLL] = 16,
+            })[cap:datalink()]
+
+            assert(linkhdrsize)
             while true do
                 local capdata, timestamp, wirelen = cap:next()
                 if capdata then
-                    --hex_dump(capdata)
-                    -- strip the ethernet header
-                    local inip = string.sub(capdata, 1+16)
-                    -- FIXME eth hdr is 16 bytes, not 14? wtf? Need to figure this out, pcap binding bug?
-                    --hex_dump(inip)
+                    -- strip the datalink header to get to the IP
+                    local inip = string.sub(capdata, 1+linkhdrsize)
                     decode(inip)
                 elseif timestamp == "timeout" then
                     -- keep looping
