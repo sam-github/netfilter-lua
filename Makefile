@@ -14,7 +14,11 @@ LUA = lua5.1
 CLUA=$(shell pkg-config --cflags ${LUA})
 LLUA=$(shell pkg-config --libs ${LUA})
 
-build: $(SO)
+build: build-core build-conntracker
+
+build-core: $(SO)
+
+build-conntracker: $(BIN) $(LIB)
 
 prefix=/usr/local
 
