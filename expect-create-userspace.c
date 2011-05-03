@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     const char* dst = 0;
     int sport = 0;
     int dport = 0;
-    int expect = 0;
+    int expectport = 0;
     int timeout = 0;
     int flags = 0;
     int opt;
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
             case 'd': dst = optarg; break;
             case 'f': sport = atoi(optarg); break;
             case 't': dport = atoi(optarg); break;
-            case 'e': expect = atoi(optarg); break;
+            case 'e': expectport = atoi(optarg); break;
             case 'T': timeout = atoi(optarg); break;
             case 'P': flags = NF_CT_EXPECT_PERMANENT; break;
             case 'v': verbose = 1; break;
@@ -66,7 +66,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    if(!(src && dst && sport && dport && expect && timeout)) {
+    if(verbose) {
+        printf("%s %s:%d - %s:%d expect %d timeout %d flags %#x\n",
+                argv[0], src, sport, dst, dport, expectport, timeout, flags);
+    }
+
+    if(!(src && dst && sport && dport && expectport && timeout)) {
         fprintf(stderr, "not all mandatory args were specified\n");
         usage();
     }
@@ -86,6 +91,8 @@ int main(int argc, char* argv[])
     nfct_set_attr_u16(master, ATTR_PORT_SRC, htons(sport));
     nfct_set_attr_u16(master, ATTR_PORT_DST, htons(dport));
 
+    ctprint(master, "master");
+
     struct nf_conntrack* expected = nfct_new();
 
     if (!expected) {
@@ -99,7 +106,7 @@ int main(int argc, char* argv[])
 
     nfct_set_attr_u8(expected, ATTR_L4PROTO, IPPROTO_TCP);
     nfct_set_attr_u16(expected, ATTR_PORT_SRC, 0);
-    nfct_set_attr_u16(expected, ATTR_PORT_DST, htons(expect));
+    nfct_set_attr_u16(expected, ATTR_PORT_DST, htons(expectport));
 
     ctprint(expected, "expected");
 
@@ -119,10 +126,6 @@ int main(int argc, char* argv[])
     nfct_set_attr_u16(mask, ATTR_PORT_DST, 0xffff);
 
     ctprint(mask, "mask");
-
-    /*
-     * Step 2: Setup expectation
-     */
 
     struct nf_expect* exp = nfexp_new();
 
