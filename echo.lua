@@ -6,6 +6,8 @@ module(..., package.seeall)
 
 require"net"
 
+arg.filter = "(dst port 9999 and dst host 127.0.0.1) or (src port 9999 and src host 127.0.0.1)"
+
 local n = net.init()
 
 function decode(inip)
@@ -34,7 +36,7 @@ function decode(inip)
         if expectport ~= nil then
             exptrack.verbose("Q", "master", src, dst, sport, dport)
             exptrack.verbose("Q", "expect", src, dst, "*", expectport)
-            exptrack.expect(src, dst, sport, dport, expectport, 10)
+            exptrack.expect(src, dst, sport, dport, expectport, 10, "permanent")
         end 
     else
         exptrack.debug("Q", "flags", string.format("%#x", tcp.flags), "(non-data)")
