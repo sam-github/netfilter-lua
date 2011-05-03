@@ -5,7 +5,7 @@
 default: build
 
 SO=nfq.so nfct.so
-BIN=conntracker nfct-expect-create-userspace
+BIN=conntracker nfct-expect-create-userspace expect-create-userspace
 LIB=exptrack.lua
 
 CC = gcc
@@ -22,9 +22,13 @@ SODIR = $(DESTDIR)$(prefix)/lib/lua/5.1/
 LIBDIR = $(DESTDIR)$(prefix)/share/lua/5.1/
 BINDIR = $(DESTDIR)$(prefix)/bin/
 
-.PHONY: install
-install: $(SO) $(BIN) $(LIB)
+.PHONY: install install-core install-conntracker
+install: install-core install-conntracker
+
+install-core: $(SO)
 	mkdir -p $(SODIR) && install -t $(SODIR) $(SO)
+
+install-conntracker: $(BIN) $(LIB)
 	mkdir -p $(BINDIR) && install -t $(BINDIR) $(BIN)
 	mkdir -p $(LIBDIR) && install -t $(LIBDIR) $(LIB)
 
@@ -40,6 +44,7 @@ COPT=-O2 -DNDEBUG -g
 CFLAGS=$(CWARNS) $(CDEFS) $(CLUA) $(LDFLAGS)
 LDLIBS=$(LLUA)
 
+
 CC.SO := $(CC) $(COPT) $(CFLAGS)
 
 %.so: %.c
@@ -50,6 +55,9 @@ nfq.so: LDLIBS+=-lnetfilter_queue
 
 nfct.so: nfct.c nflua.h
 nfct.so: LDLIBS+=-lnetfilter_conntrack
+
+expect-create-userspace: LDLIBS+=-lnetfilter_conntrack
+expect-create-userspace: expect-create-userspace.c
 
 options:
 	./luaopts PF /usr/include/bits/socket.h > _pf.c

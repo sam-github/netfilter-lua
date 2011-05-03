@@ -13,7 +13,7 @@ arg.method = "queue"
 arg.decode = "echo"
 arg.verbose = nil -- bool
 arg.debug = nil -- bool
-arg.expector = nil -- "external" or default
+arg.expector = nil -- "c" or "lua" or default
 arg.filter = nil -- a pcap filter, used if method = pcap
 --[[
 Example:
@@ -45,9 +45,9 @@ function hex_dump(buf)
 end
 
 expector = {
-    external = function (src, dst, sport, dport, expectport, timeout, flag)
+    lua = function (src, dst, sport, dport, expectport, timeout, flag)
         local ext = {
-            "/usr/local/bin/nfct-expect-create-userspace",
+            "nfct-expect-create-userspace",
             "expect="..expectport,
             "src="..src,
             "dst="..dst,
@@ -62,7 +62,27 @@ expector = {
         exptrack.debug("cmd=", cmd)
         exptrack.debug("ret=", os.execute(cmd))
     end;
+    c = function(src, dst, sport, dport, expectport, timeout, flag)
+        local ext = {
+            "expect-create-userspace",
+            "-e "..expectport,
+            "-s "..src,
+            "-d "..dst,
+            "-f "..sport,
+            "-t "..dport,
+            "-T "..timeout,
+        }
+        if flag then
+            assert(flag == "permanent") -- the only one supported
+            table.insert(ext, "-P")
+        end
+        local cmd = table.concat(ext, " ")
+        exptrack.debug("cmd=", cmd)
+        exptrack.debug("ret=", os.execute(cmd))
+    end;
 }
+
+expector.external = expector.lua -- Legacy support
 
 method = {
     queue = {
@@ -91,8 +111,8 @@ method = {
                     --hex_dump(capdata)
                     -- strip the ethernet header
                     local inip = string.sub(capdata, 1+16)
-                    -- FIXME at least on on lo, eth pcap hdr is 16 bytes, not 14? wtf? Need to figure this out, pcap binding bug?
-                    hex_dump(inip)
+                    -- FIXME eth hdr is 16 bytes, not 14? wtf? Need to figure this out, pcap binding bug?
+                    --hex_dump(inip)
                     decode(inip)
                 elseif timestamp == "timeout" then
                     -- keep looping

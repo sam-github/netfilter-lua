@@ -7,12 +7,20 @@ See ECHO.txt for usage.
 
 -- FIXME remove assert, its too strong a failure
 
+local function optional(package)
+    local ok, m = pcall(require, package)
+    if not ok then
+        m = nil
+    end
+    return m
+end
+
 local arg = assert(arg)
 local assert = assert
 local tonumber = tonumber
 local tostring = tostring
-local nfct = require"nfct"
-local nfq = require"nfq"
+local nfct = optional"nfct"
+local nfq = optional"nfq"
 
 module(...)
 
