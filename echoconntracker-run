@@ -4,13 +4,18 @@
 
 # set -x
 
+# Use pcap or queue for method.
+# Use c or lua or nfct for internal.
+method=${1:-pcap}
+expector=${2:-internal}
+
 restore() {
     iptables-restore < echoconntracker.restore
 }
 
 trap restore INT
 
-iptables-restore < echoconntracker.rules
+iptables-restore < echoconntracker-$method.rules
 
-./conntracker method=queue decode=echo expector=external verbose=y
+./conntracker method=$method decode=echo expector=$expector verbose=y
 
