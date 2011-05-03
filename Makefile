@@ -10,7 +10,11 @@ LIB=exptrack.lua
 
 LUA=lua5.1
 
-build: $(SO) $(BIN)
+build: build-core build-conntracker
+
+build-core: $(SO)
+
+build-conntracker: $(BIN) $(LIB)
 
 prefix=/usr/local
 
