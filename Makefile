@@ -61,6 +61,7 @@ nfct.so: nfct.c nflua.h
 nfct.so: LDLIBS+=-lnetfilter_conntrack
 
 expect-create-userspace: LDLIBS=-lnetfilter_conntrack
+expect-create-userspace: CFLAGS+=$(COPT)
 expect-create-userspace: expect-create-userspace.c
 
 options:
