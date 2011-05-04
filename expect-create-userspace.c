@@ -66,11 +66,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    if(verbose) {
-        printf("%s %s:%d - %s:%d expect %d timeout %d flags %#x\n",
-                argv[0], src, sport, dst, dport, expectport, timeout, flags);
-    }
-
     if(!(src && dst && sport && dport && expectport && timeout)) {
         fprintf(stderr, "not all mandatory args were specified\n");
         usage();
@@ -159,6 +154,9 @@ int main(int argc, char* argv[])
             perror("nfexp_query");
             exit(EXIT_FAILURE);
         }
+    } else {
+        printf("Expecting traffic on TCP port %d on %s from %s\n",
+               expectport, dst, src);
     }
 
     nfct_close(h);
