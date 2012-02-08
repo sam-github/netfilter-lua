@@ -1,2 +1,5 @@
 *.so
 expect-create-userspace
+.svn
+*-stamp
+debian
