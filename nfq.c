@@ -28,6 +28,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 /*-
 ** nfq - a binding to netfilter's queue subsystem
 
+*/
+
+/*
 
 list rules:
 

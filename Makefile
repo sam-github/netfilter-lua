@@ -91,3 +91,9 @@ test: $(TOUT)
 	lua $<
 	touch $@
 
+doc: README.txt
+
+README.txt: README.txt.in nfq.c nfct.c
+	cp README.txt.in $@
+	luadoc nfq.c nfct.c >> $@
+

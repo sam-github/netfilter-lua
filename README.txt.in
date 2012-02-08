@@ -1,0 +1,10 @@
+= nfq and nfct - bindings to libnetfilter_queue and libnetfilter_conntrack
+
+To build, see Makefile.
+
+Homepage: <https://github.com/sam-github/netfilter-lua>
+Author: <sroberts@wurldtech.com>
+
+Documentation:
+
+See below, extracted from in-source comments.
