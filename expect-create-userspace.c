@@ -148,12 +148,9 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    if (nfexp_query(h, NFCT_Q_CREATE, exp) < 0) {
-        /* We don't consider recreation of an existing expectation to be an error. */
-        if(errno != EEXIST) {
-            perror("nfexp_query");
-            exit(EXIT_FAILURE);
-        }
+    if (nfexp_query(h, NFCT_Q_CREATE_UPDATE, exp) < 0) {
+        perror("nfexp_query");
+        exit(EXIT_FAILURE);
     } else {
         printf("Expecting traffic on TCP port %d on %s from %s\n",
                expectport, dst, src);
