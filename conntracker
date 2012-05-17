@@ -71,6 +71,27 @@ expector = {
         exptrack.debug("cmd=", cmd)
         exptrack.debug("ret=", os.execute(cmd))
     end;
+    loop_c = function(src, dst, sport, dport, expectport, timeout, flag)
+        local ext = {
+            "watch",
+            "-n "..timeout/2,
+            "expect-create-userspace",
+            "-e "..expectport,
+            "-s "..src,
+            "-d "..dst,
+            "-f "..sport,
+            "-t "..dport,
+            "-T "..timeout,
+            "> /dev/null 2>&1" -- Too verbose otherwise
+        }
+        if flag then
+            assert(flag == "permanent") -- the only one supported
+            table.insert(ext, "-P")
+        end
+        local cmd = table.concat(ext, " ")
+        exptrack.debug("cmd=", cmd)
+        exptrack.debug("ret=", os.execute(cmd))
+    end;
 }
 
 expector.external = expector.lua -- Legacy support
@@ -132,4 +153,3 @@ c = catcher.open()
 d = decoder.decode
 
 catcher.catch(c, d)
-
