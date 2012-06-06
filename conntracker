@@ -74,7 +74,7 @@ expector = {
     loop_c = function(src, dst, sport, dport, expectport, timeout, flag)
         local ext = {
             "watch",
-            "-n "..timeout/2,
+            "-n 60",
             "expect-create-userspace",
             "-e "..expectport,
             "-s "..src,
