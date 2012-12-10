@@ -67,9 +67,15 @@ local function damage(payload)
     return "accept", replace
 end
 
-local payload
+local h = nfq.open()
+nfq.unbind_pf(h, "inet")
+nfq.bind_pf(h, "inet")
 
-nfq.loop(function (nfqdata)
+local q = nfq.create_queue(h, 0)
+nfq.set_mode(q, copy, 0xffff)
+
+local payload
+nfq.catch(h, function (nfqdata)
     print("nfqdata", nfqdata)
 
     local payload = nfq.get_payload(nfqdata)
@@ -77,7 +83,10 @@ nfq.loop(function (nfqdata)
     print(h(payload))
 
     --return setttl(payload)
-    return damage(payload)
+    return "accept", damage(payload)
     --return "drop"
 end)
+
+nfq.destroy_queue(q)
+nfq.close(h)
 

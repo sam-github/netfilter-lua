@@ -28,6 +28,21 @@ THE POSSIBILITY OF SUCH DAMAGE.
 /*-
 ** nfq - a binding to netfilter's queue subsystem
 
+Example usage:
+
+h = nfq.open()
+nfq.unbind_pf(h, "inet")
+nfq.bind_pf(h, "inet")
+
+q = nfq.create_queue(h, 0)
+nfq.set_mode(q, copy, 0xffff)
+
+nfq.catch(h, function(nfqdata)
+    print(string.format("%q", nfq.get_payload(nfqdata)))
+end)
+
+nfq.destroy_queue(q)
+nfq.close(h)
 */
 
 /*
